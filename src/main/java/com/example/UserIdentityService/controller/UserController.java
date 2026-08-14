@@ -37,6 +37,8 @@ public class UserController {
     @Value("${pagination.default-size}")
     private int defaultSize;
 
+    
+    //create the user
     @PostMapping("/create")
     public ResponseEntity<UserResponse> createUser(
             @RequestBody CreateUserRequest request) {
@@ -46,6 +48,8 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    
+    //get all Users
     @GetMapping
     public ResponseEntity<PaginationResponse<UserResponse>> getAllUsers(
             @RequestParam(required = false) Integer page,
@@ -65,6 +69,8 @@ public class UserController {
         );
     }
 
+    
+    //get the user by id
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(
             @PathVariable Long id) {
@@ -72,6 +78,8 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    
+    //update the user
     @PutMapping("/update/{id}")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
@@ -80,6 +88,8 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
+    
+    //delete the user
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ApiResponse> deleteUser(
             @PathVariable Long id) {
