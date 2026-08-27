@@ -1,7 +1,9 @@
 package com.example.UserIdentityService.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import org.apache.el.stream.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,23 @@ public class UserSessionService {
 
     public void saveLoginSuccess(User user) {
 
+    	List<UserSession> existingSessions =
+                userSessionRepository.findByUserUsernameAndActiveTrue(
+                        user.getUsername());
+
+        // Close any existing active session
+        for (UserSession session : existingSessions) {
+
+            session.setLogoutTime(LocalDateTime.now());
+            session.setActive(false);
+            session.setStatus("LOGGED_OUT");
+
+            userSessionRepository.save(session);
+        }
+    	    
+    	
+    	
+    	
         UserSession session = new UserSession();
 
         session.setUser(user);
@@ -41,14 +60,21 @@ public class UserSessionService {
 
     public void logout(String username) {
 
-        UserSession session = userSessionRepository
-                .findByUserUsernameAndActiveTrue(username)
-                .orElseThrow(() -> new RuntimeException("No active session found"));
+        List<UserSession> activeSessions =
+                userSessionRepository.findByUserUsernameAndActiveTrue(username);
 
-        session.setLogoutTime(LocalDateTime.now());
-        session.setActive(false);
+        if (activeSessions.isEmpty()) {
+            throw new RuntimeException("No active session found");
+        }
 
-        userSessionRepository.save(session);
+        for (UserSession session : activeSessions) {
+
+            session.setLogoutTime(LocalDateTime.now());
+            session.setActive(false);
+            session.setStatus("LOGGED_OUT");
+
+            userSessionRepository.save(session);
+        }
     }
 
 }
