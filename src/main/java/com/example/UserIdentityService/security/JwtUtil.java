@@ -1,12 +1,12 @@
 package com.example.UserIdentityService.security;
 
-import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.example.UserIdentityService.entity.User;
@@ -18,15 +18,23 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET_KEY =
-            "mysecretkeymysecretkeymysecretkeymysecretkey";
+    // Get JWT secret key from Config Server
+    @Value("${jwt.secret-key}")
+    private String secretKeyValue;
 
-    private static final long EXPIRATION_TIME =
-            1000 * 60 * 60 * 24;
+    // Get JWT expiration time from Config Server
+    @Value("${jwt.expiration-time}")
+    private long expirationTime;
 
-    private final SecretKey secretKey =
-            Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    // Create SecretKey
+    private SecretKey getSecretKey() {
 
+        return Keys.hmacShaKeyFor(
+                secretKeyValue.getBytes()
+        );
+    }
+
+    // Create JWT claims
     private Map<String, Object> createClaims(User user) {
 
         Map<String, Object> claims = new HashMap<>();
@@ -36,62 +44,72 @@ public class JwtUtil {
 
         return claims;
     }
-    
-    
-    
-    
 
+    // Generate JWT
     public String generateToken(User user) {
 
         return Jwts.builder()
+
                 .claims(createClaims(user))
+
                 .subject(user.getUsername())
+
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(secretKey)
+
+                .expiration(
+                        new Date(
+                                System.currentTimeMillis()
+                                        + expirationTime
+                        )
+                )
+
+                .signWith(getSecretKey())
+
                 .compact();
     }
 
-
-
+    // Extract username
     public String extractUsername(String token) {
 
         return extractAllClaims(token).getSubject();
     }
 
-
-
+    // Extract expiration time
     public Date extractExpiration(String token) {
 
         return extractAllClaims(token).getExpiration();
     }
 
-
-
+    // Check whether token is expired
     public boolean isTokenExpired(String token) {
 
-        return extractExpiration(token).before(new Date());
+        return extractExpiration(token)
+                .before(new Date());
     }
 
+    // Validate token
+    public boolean validateToken(
+            String token,
+            String username) {
 
-
-    public boolean validateToken(String token, String username) {
-
-        String extractedUsername = extractUsername(token);
+        String extractedUsername =
+                extractUsername(token);
 
         return extractedUsername.equals(username)
                 && !isTokenExpired(token);
     }
 
-
-
+    // Extract all claims
     private Claims extractAllClaims(String token) {
 
         return Jwts.parser()
-                .verifyWith(secretKey)
+
+                .verifyWith(getSecretKey())
+
                 .build()
+
                 .parseSignedClaims(token)
+
                 .getPayload();
     }
-
 }
