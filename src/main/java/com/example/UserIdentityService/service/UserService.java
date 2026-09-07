@@ -115,12 +115,13 @@ public class UserService {
         User user = userRepository.findById(id).orElse(null);
 
         if (user == null) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException("User not found or inactive");
         }
 
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
+        
 
         User updatedUser = userRepository.save(user);
 
@@ -134,13 +135,15 @@ public class UserService {
 
     public void deleteUser(Long id) {
 
-        User user = userRepository.findById(id).orElse(null);
+        User user = userRepository.findByIdAndIsActiveTrue(id).orElse(null);
 
         if (user == null) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException("User not found or inactive");
         }
 
-        userRepository.delete(user);
+        user.setActive(false);
+
+        userRepository.save(user);
     }
 
 
@@ -158,7 +161,24 @@ public class UserService {
         response.setRole(user.getRole());
         response.setCreatedAt(user.getCreatedAt());
         response.setModifiedAt(user.getModifiedAt());
+        response.set_active(user.isActive());
 
         return response;
+    }
+
+
+    public UserResponse updateUserStatus(Long id, boolean isActive) {
+
+        User user = userRepository.findById(id).orElse(null);
+
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
+        }
+
+        user.setActive(isActive);
+
+        User updatedUser = userRepository.save(user);
+
+        return convertToResponse(updatedUser);
     }
 }
