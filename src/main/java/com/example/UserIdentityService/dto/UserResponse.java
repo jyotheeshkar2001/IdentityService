@@ -23,5 +23,7 @@ public class UserResponse {
 	    private LocalDateTime createdAt;
 
 	    private LocalDateTime modifiedAt;
+	    
+	    private boolean is_active;
 
 }

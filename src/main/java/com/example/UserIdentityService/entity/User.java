@@ -45,6 +45,9 @@ public class User {
 
     private String role;
 
+    @Column(nullable = false)
+    private boolean isActive = true;
+    
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

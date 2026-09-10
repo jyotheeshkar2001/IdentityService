@@ -33,7 +33,7 @@ public class AuthService {
 
 
         // Check username exists
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByUsernameAndIsActiveTrue(request.getUsername())
                 .orElseThrow(() ->
                         new UserNotFoundException("User not found"));
 

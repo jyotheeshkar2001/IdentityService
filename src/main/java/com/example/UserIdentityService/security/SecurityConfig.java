@@ -32,7 +32,8 @@ public class SecurityConfig {
             .requestMatchers(
                 "/api/users/create",
                 "/api/users/update/**",
-                "/api/users/delete/**"
+                "/api/users/delete/**",
+                "/api/users/*/status"
             )
             .hasRole("ADMIN")
             .anyRequest()
